@@ -36,7 +36,7 @@ UI, Workflows & Features
  * Extend the alias configuration syntax to allow aliases using
    characters outside ASCII alphanumeric (plus '-').
 
- * A signature on a commit that was GPG signed long time ago ought to
+ * A signature on a commit that was GPG signed a long time ago ought to
    be still valid after the key that was used to sign it has expired,
    but we showed them in alarming red.
 
@@ -88,7 +88,7 @@ UI, Workflows & Features
  * "git repo structure" command learns to report maximum values on
    various aspects of objects it inspects.
 
- * "git rebase" learns "--trailer" command to drive the
+ * "git rebase" learns "--trailer" option to drive the
    interpret-trailers machinery.
 
  * "git fast-import" learned to optionally replace signature on
@@ -108,6 +108,24 @@ UI, Workflows & Features
 
  * "git repo info -h" and "git repo structure -h" limit their help output
    to the part that is specific to the subcommand.
+
+ * "git format-patch --cover-letter" learns to use a simpler format
+   instead of the traditional shortlog format to list its commits with
+   a new --commit-list-format option and format.commitListFormat
+   configuration variable.
+
+ * `git backfill` learned to accept revision and pathspec arguments.
+
+ * "git replay" (experimental) learns, in addition to "pick" and
+   "replay", a new operating mode "revert".
+
+ * "git replay" now supports replaying down to the root commit.
+
+ * Handling of signed commits and tags in fast-import has been made more
+   configurable.
+
+ * "git config list" is the official way to spell "git config -l" and
+   "git config --list".  Use it to update the documentation.
 
 
 Performance, Internal Implementation, Development Support etc.
@@ -189,7 +207,7 @@ Performance, Internal Implementation, Development Support etc.
    from getting added.
 
  * The core.attributesfile is intended to be set per repository, but
-   were kept track of by a single global variable in-core, which has
+   was kept track of by a single global variable in-core, which has
    been corrected by moving it to per-repository data structure.
 
  * Use the hook API to replace ad-hoc invocation of hook scripts via
@@ -214,8 +232,8 @@ Performance, Internal Implementation, Development Support etc.
  * Reduce dependence on the global the_hash_algo and the_repository
    variables of wt-status code path.
 
-  * The way combined list-object filter options are parsed has been
-    revamped.
+ * The way combined list-object filter options are parsed has been
+   revamped.
 
  * Editorconfig filename patterns were specified incorrectly, making
    many source files inside subdirectories unaffected, which has been
@@ -254,7 +272,7 @@ Performance, Internal Implementation, Development Support etc.
  * split-index.c has been updated to not use the global the_repository
    and the_hash_algo variables.
 
- * The unsigned integer that is used as an bitset to specify the kind
+ * The unsigned integer that is used as a bitset to specify the kind
    of branches interpret_branch_name() function has been changed to
    use a dedicated enum type.
 
@@ -264,8 +282,50 @@ Performance, Internal Implementation, Development Support etc.
  * Code paths that loop over another array to push each element into a
    strvec have been rewritten to use strvec_pushv() instead.
 
- * In case homebrew breaks REG_ENHANCED again, leave a in-code comment
+ * In case homebrew breaks REG_ENHANCED again, leave an in-code comment
    to suggest use of our replacement regex as a workaround.
+
+ * MinGW build updates.
+
+ * The way dash 0.5.13 handles non-ASCII contents in here-doc
+   is buggy and breaks our existing tests, which unfortunately
+   have been rewritten to avoid triggering the bug.
+
+ * Object name handling (disambiguation and abbreviation) has been
+   refactored to be backend-generic, moving logic into the respective
+   object database backends.
+
+ * pack-objects's --stdin-packs=follow mode learns to handle
+   excluded-but-open packs.
+
+ * A few code paths that spawned child processes for network
+   connection weren't wait(2)ing for their children and letting "init"
+   reap them instead; they have been tightened.
+
+ * Adjust the codebase for C23 that changes functions like strchr()
+   that discarded constness when they return a pointer into a const
+   string to preserve constness.
+
+ * A handful of inappropriate uses of the_repository have been
+   rewritten to use the right repository structure instance in the
+   read-cache.c codepath.
+
+ * Internals of "git fsck" have been refactored to not depend on the
+   global `the_repository` variable.
+
+ * Reduce dependency on `the_repository` in add-patch.c file.
+
+ * The way the "git log -L<range>:<file>" feature is bolted onto the
+   log/diff machinery is being reworked a bit to make the feature
+   compatible with more diff options, like -S/G.
+
+ * Further work to adjust the codebase for C23 that changes functions
+   like strchr() that discarded constness when they return a pointer into
+   a const string to preserve constness.
+
+ * "git rev-list --maximal-only" has been optimized by borrowing the
+   logic used by "git show-branch --independent", which computes the
+   same kind of information much more efficiently.
 
 
 Fixes since v2.53
@@ -322,7 +382,7 @@ Fixes since v2.53
    (merge f4eff7116d ps/pack-concat-wo-backfill later to maint).
 
  * "git switch <name>", in an attempt to create a local branch <name>
-   after a remote tracking branch of the same name gave an advise
+   after a remote tracking branch of the same name gave an advice
    message to disambiguate using "git checkout", which has been
    updated to use "git switch".
    (merge 12fee11f21 jc/checkout-switch-restore later to maint).
@@ -336,7 +396,7 @@ Fixes since v2.53
  * "git format-patch --from=<me>" did not honor the command line
    option when writing out the cover letter, which has been corrected.
 
- * Update build precedure for mergetool documentation in meson-based builds.
+ * Update build procedure for mergetool documentation in meson-based builds.
    (merge 58e4eeeeb5 pw/meson-doc-mergetool later to maint).
 
  * An earlier attempt to optimize "git subtree" discarded too much
@@ -445,6 +505,33 @@ Fixes since v2.53
    refspec is a single-object refspec, which has been corrected.
    (merge 4e5dc601dd kj/refspec-parsing-outside-repository later to maint).
 
+ * Fix a regression in writing the commit-graph where commits with dates
+   exceeding 34 bits (beyond year 2514) could cause an underflow and
+   crash Git during the generation data overflow chunk writing.
+
+ * The value of a wrong pointer variable was referenced in an error
+   message that reported that it shouldn't be NULL.
+   (merge 753ecf4205 yc/path-walk-fix-error-reporting later to maint).
+
+ * The check in "receive-pack" to prevent a checked out branch from
+   getting updated via updateInstead mechanism has been corrected.
+
+ * "git backfill" is capable of auto-detecting a sparsely checked out
+   working tree, which was broken.
+   (merge 339eba65a7 th/backfill-auto-detect-sparseness-fix later to maint).
+
+ * add_files_to_cache() used diff_files() to detect only the paths that
+   are different between the index and the working tree and add them,
+   which does not need rename detection, which interfered with unnecessary
+   conflicts.
+   (merge c0ce43376b ng/add-files-to-cache-wo-rename later to maint).
+
+ * Doc mark-up update for entries in the glossary with bulleted lists.
+   (merge a65cbd87ea jk/doc-markup-sub-list-indentation later to maint).
+
+ * CI dependency updates.
+   (merge 4bdb17e3a8 jc/ci-github-actions-use-checkout-v5 later to maint).
+
  * Other code cleanup, docfix, build fix, etc.
    (merge d79fff4a11 jk/remote-tracking-ref-leakfix later to maint).
    (merge 7a747f972d dd/t5403-modernise later to maint).
@@ -495,3 +582,7 @@ Fixes since v2.53
    (merge fc8a4f15e7 gi/doc-boolean-config-typofix later to maint).
    (merge 37182267a0 kh/doc-interpret-trailers-1 later to maint).
    (merge f64c50e768 jc/rerere-modern-strbuf-handling later to maint).
+   (merge 699248d89e th/t8003-unhide-git-failures later to maint).
+   (merge d8e34f971b za/t2000-modernise later to maint).
+   (merge 849988bc74 th/t6101-unhide-git-failures later to maint).
+   (merge 0f0ce07625 sp/doc-gitignore-oowt later to maint).

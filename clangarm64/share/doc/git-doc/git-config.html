@@ -4738,12 +4738,12 @@ format and payload (e.g., <code>reftable:///foo/bar</code>).</p>
 <dl>
 <dt class="hdlist1"><code>files</code></dt>
 <dd>
-<p>for loose files with packed-refs. This is the default.</p>
+<p>for loose files with packed-refs.
+This is the default.</p>
 </dd>
 <dt class="hdlist1"><code>reftable</code></dt>
 <dd>
-<p>for the reftable format. This format is experimental and its
-internals are subject to change.</p>
+<p>for the reftable format.</p>
 </dd>
 </dl>
 </div>
@@ -5211,6 +5211,12 @@ Please see the <em>SubmittingPatches</em> document for further discussion.</p>
 format-patch is invoked, but in addition can be set to "auto", to
 generate a cover-letter only when there&#8217;s more than one patch.
 Default is false.</p>
+</dd>
+<dt class="hdlist1">format.commitListFormat</dt>
+<dd>
+<p>When the <code>--cover-letter-format</code> option is not given, <code>format-patch</code>
+uses the value of this variable to decide how to format the entry of
+each commit. Defaults to <code>shortlog</code>.</p>
 </dd>
 <dt class="hdlist1">format.outputDirectory</dt>
 <dd>
@@ -7835,7 +7841,7 @@ processes. See <a href="git-pack-objects.html">git-pack-objects(1)</a> for full 
 <dt class="hdlist1">pack.preferBitmapTips</dt>
 <dd>
 <p>Specifies a ref hierarchy (e.g., "refs/heads/"); can be
-given multiple times to specify more than one hierarchies.
+given multiple times to specify more than one hierarchy.
 When selecting which commits will receive bitmaps, prefer a
 commit at the tip of a reference that is contained in any of
 the configured hierarchies.</p>
@@ -9068,7 +9074,7 @@ file, it must be supplied using <code>sendemail.smtpSSLClientKey</code> or the
 <dd>
 <p>Path to the client private key file that corresponds to the client
 certificate. To avoid misconfiguration, this configuration must be used
-in conjunction with <code>sendemail.smtpSSLClientKey</code> or the
+in conjunction with <code>sendemail.smtpSSLClientCert</code> or the
 <code>--smtp-ssl-client-cert</code> option. If the client key is included in the
 client certificate, the choice of private key depends on the format of
 the certificate. Visit <a href="https://metacpan.org/pod/IO::Socket::SSL" class="bare">https://metacpan.org/pod/IO::Socket::SSL</a> for more
@@ -9585,7 +9591,7 @@ When set to "dirty" will ignore all changes to the submodule&#8217;s work tree a
 takes only differences between the HEAD of the submodule and the commit
 recorded in the superproject into account. "untracked" will additionally
 let submodules with modified tracked files in their work tree show up.
-When set to "none"(default) It also show submodules as changed if they have
+When set to "none" (default) it also shows submodules as changed if they have
 untracked files in their work tree.
 This setting overrides any setting made in .gitmodules for this submodule,
 both settings can be overridden on the command line by using the
@@ -10493,7 +10499,7 @@ looks like</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-04-03 05:44:55 UTC
+Last updated 2026-04-20 17:51:52 UTC
 </div>
 </div>
 </body>
